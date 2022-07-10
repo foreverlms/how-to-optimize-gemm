@@ -8,6 +8,18 @@
 
 void AddDot1x4(int, double *, int, double *, int, double *, int);
 
+/**
+ * 循环展开 + 减少cache miss
+ * @param m
+ * @param n
+ * @param k
+ * @param a
+ * @param lda
+ * @param b
+ * @param ldb
+ * @param c
+ * @param ldc
+ */
 void MY_MMult(int m, int n, int k, double *a, int lda,
               double *b, int ldb,
               double *c, int ldc)
@@ -39,34 +51,30 @@ void AddDot1x4(int k, double *a, int lda, double *b, int ldb, double *c, int ldc
 
        in the original matrix C.
 
-       In this version, we accumulate in registers and put A( 0, p ) in a register */
+       In this version, we merge the four loops, computing four inner
+       products simultaneously. */
 
     int p;
-    register double
-        /* hold contributions to
-           C( 0, 0 ), C( 0, 1 ), C( 0, 2 ), C( 0, 3 ) */
-        c_00_reg,
-        c_01_reg, c_02_reg, c_03_reg,
-        /* holds A( 0, p ) */
-        a_0p_reg;
 
-    c_00_reg = 0.0;
-    c_01_reg = 0.0;
-    c_02_reg = 0.0;
-    c_03_reg = 0.0;
+    // 两个提升的地方：
+    //  1. The index p needs only be updated once every eight floating point operations.
+    //
+    // 2. 只在矩阵比较大时会产生明显的效益提升：
+    //    A(0,p)只需要一次从内存里取
+    //      Element A( 0, p ) needs only be brought in from memory once
+    //      instead of four times. (This only becomes a benefit when the
+    //      matrices no longer fit in the L2 cache.)
+    //
 
+    //  AddDot( k, &A( 0, 0 ), lda, &B( 0, 0 ), &C( 0, 0 ) );
+    //  AddDot( k, &A( 0, 0 ), lda, &B( 0, 1 ), &C( 0, 1 ) );
+    //  AddDot( k, &A( 0, 0 ), lda, &B( 0, 2 ), &C( 0, 2 ) );
+    //  AddDot( k, &A( 0, 0 ), lda, &B( 0, 3 ), &C( 0, 3 ) );
     for (p = 0; p < k; p++)
     {
-        a_0p_reg = A(0, p);
-
-        c_00_reg += a_0p_reg * B(p, 0);
-        c_01_reg += a_0p_reg * B(p, 1);
-        c_02_reg += a_0p_reg * B(p, 2);
-        c_03_reg += a_0p_reg * B(p, 3);
+        C(0, 0) += A(0, p) * B(p, 0);
+        C(0, 1) += A(0, p) * B(p, 1);
+        C(0, 2) += A(0, p) * B(p, 2);
+        C(0, 3) += A(0, p) * B(p, 3);
     }
-
-    C(0, 0) += c_00_reg;
-    C(0, 1) += c_01_reg;
-    C(0, 2) += c_02_reg;
-    C(0, 3) += c_03_reg;
 }

@@ -98,6 +98,7 @@ void AddDot4x4( int k, double *a, int lda,  double *b, int ldb, double *c, int l
     b_p3_reg = *b_p3_pntr++;
 
     /* First row and second rows */
+    // 代码重新组织了下，让乘法更符合接下来的向量化操作
     c_00_reg += a_0p_reg * b_p0_reg;
     c_10_reg += a_1p_reg * b_p0_reg;
 

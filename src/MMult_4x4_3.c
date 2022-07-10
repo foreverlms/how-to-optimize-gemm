@@ -28,7 +28,7 @@ void MY_MMult( int m, int n, int k, double *a, int lda,
 
 void AddDot4x4( int k, double *a, int lda,  double *b, int ldb, double *c, int ldc )
 {
-  /* So, this routine computes a 4x4 block of matrix A
+  /* So, this routine computes a 4x4 block of matrix C
 
            C( 0, 0 ), C( 0, 1 ), C( 0, 2 ), C( 0, 3 ).  
            C( 1, 0 ), C( 1, 1 ), C( 1, 2 ), C( 1, 3 ).  

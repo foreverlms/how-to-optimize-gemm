@@ -8,6 +8,18 @@
 
 void AddDot1x4(int, double *, int, double *, int, double *, int);
 
+/**
+ * 自己循环展开
+ * @param m
+ * @param n
+ * @param k
+ * @param a
+ * @param lda
+ * @param b
+ * @param ldb
+ * @param c
+ * @param ldc
+ */
 void MY_MMult(int m, int n, int k, double *a, int lda,
               double *b, int ldb,
               double *c, int ldc)
@@ -39,7 +51,7 @@ void AddDot1x4(int k, double *a, int lda, double *b, int ldb, double *c, int ldc
 
        in the original matrix C.
 
-       In this version, we accumulate in registers and put A( 0, p ) in a register */
+       We now unroll the loop */
 
     int p;
     register double
@@ -49,20 +61,51 @@ void AddDot1x4(int k, double *a, int lda, double *b, int ldb, double *c, int ldc
         c_01_reg, c_02_reg, c_03_reg,
         /* holds A( 0, p ) */
         a_0p_reg;
+    double
+        /* Point to the current elements in the four columns of B */
+        *bp0_pntr,
+        *bp1_pntr, *bp2_pntr, *bp3_pntr;
+
+    bp0_pntr = &B(0, 0); // 按
+    bp1_pntr = &B(0, 1);
+    bp2_pntr = &B(0, 2);
+    bp3_pntr = &B(0, 3);
 
     c_00_reg = 0.0;
     c_01_reg = 0.0;
     c_02_reg = 0.0;
     c_03_reg = 0.0;
 
-    for (p = 0; p < k; p++)
+    // lms P不一定被4整除呢
+    for (p = 0; p < k; p += 4)
     {
         a_0p_reg = A(0, p);
 
-        c_00_reg += a_0p_reg * B(p, 0);
-        c_01_reg += a_0p_reg * B(p, 1);
-        c_02_reg += a_0p_reg * B(p, 2);
-        c_03_reg += a_0p_reg * B(p, 3);
+        c_00_reg += a_0p_reg * *bp0_pntr++;
+        c_01_reg += a_0p_reg * *bp1_pntr++;
+        c_02_reg += a_0p_reg * *bp2_pntr++;
+        c_03_reg += a_0p_reg * *bp3_pntr++;
+
+        a_0p_reg = A(0, p + 1);
+
+        c_00_reg += a_0p_reg * *bp0_pntr++;
+        c_01_reg += a_0p_reg * *bp1_pntr++;
+        c_02_reg += a_0p_reg * *bp2_pntr++;
+        c_03_reg += a_0p_reg * *bp3_pntr++;
+
+        a_0p_reg = A(0, p + 2);
+
+        c_00_reg += a_0p_reg * *bp0_pntr++;
+        c_01_reg += a_0p_reg * *bp1_pntr++;
+        c_02_reg += a_0p_reg * *bp2_pntr++;
+        c_03_reg += a_0p_reg * *bp3_pntr++;
+
+        a_0p_reg = A(0, p + 3);
+
+        c_00_reg += a_0p_reg * *bp0_pntr++;
+        c_01_reg += a_0p_reg * *bp1_pntr++;
+        c_02_reg += a_0p_reg * *bp2_pntr++;
+        c_03_reg += a_0p_reg * *bp3_pntr++;
     }
 
     C(0, 0) += c_00_reg;

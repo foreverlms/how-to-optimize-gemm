@@ -8,6 +8,18 @@
 
 void AddDot1x4(int, double *, int, double *, int, double *, int);
 
+/**
+ * 通过寄存器变量来存储中间变量，避免从内存里取，寄存器变量访问比较快
+ * @param m
+ * @param n
+ * @param k
+ * @param a
+ * @param lda
+ * @param b
+ * @param ldb
+ * @param c
+ * @param ldc
+ */
 void MY_MMult(int m, int n, int k, double *a, int lda,
               double *b, int ldb,
               double *c, int ldc)
@@ -57,7 +69,7 @@ void AddDot1x4(int k, double *a, int lda, double *b, int ldb, double *c, int ldc
 
     for (p = 0; p < k; p++)
     {
-        a_0p_reg = A(0, p);
+        a_0p_reg = A(0, p); // 寄存器变量存储
 
         c_00_reg += a_0p_reg * B(p, 0);
         c_01_reg += a_0p_reg * B(p, 1);
